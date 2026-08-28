@@ -76,6 +76,7 @@ void SoundMgr::preloadAllSounds() {
         m_chunks["sounds/" + name] = chunk;
     }
     closedir(dir);
+    std::printf("SoundMgr: %d sound effects ready\n", (int) m_chunks.size());
 }
 
 void SoundMgr::playSound(const std::string& name) {
@@ -106,7 +107,9 @@ void SoundMgr::setBackgroundSound(const std::string& name) {
             std::printf("SoundMgr: could not play background sound %s\n", music_file);
             return;
         }
-        Mix_PlayMusic(m_player, -1);
+        if (Mix_PlayMusic(m_player, -1) != 0) {
+            std::printf("SoundMgr: could not start %s: %s\n", music_file, Mix_GetError());
+        }
     }
 }
 

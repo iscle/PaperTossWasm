@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p dist
 
-emcc src/*.cpp \
+em++ src/*.cpp \
   -o dist/index.html \
   --shell-file shell.html \
   -std=c++17 \
