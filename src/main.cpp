@@ -177,6 +177,10 @@ EM_BOOL onKeyDown(int, const EmscriptenKeyboardEvent* e, void*) {
         evt.publish("paperTossPlaySound", "Crumple.wav");
     } else if (Papertoss::state == Papertoss::GameState::SCORE) {
         evt.publish("paperTossPlaySound", "Computer.wav");
+    } else if (Papertoss::state == Papertoss::GameState::MENU) {
+        // Android let the back key fall through to Activity.finish() here.
+        evt.publish("paperTossPlaySound", "Crumple.wav");
+        evt.publish("onExitPressed");
     }
     evt.publish("gotoMenu");
     return EM_TRUE;

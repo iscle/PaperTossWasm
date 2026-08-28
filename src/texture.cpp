@@ -6,6 +6,7 @@
 #include <cstring>
 #include <vector>
 
+#include "default_font_metrics.h"
 #include "platform.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -131,7 +132,9 @@ Texture::Texture(const std::string& text, const std::string& font, int glyph_off
         stbtt_GetFontVMetrics(info, &ascent, &descent, &line_gap);
     }
 
-    // Paint.measureText(): the sum of the glyph advances.
+    // Two different measurements, exactly as Texture.java ends up doing:
+    // Paint.measureText() runs before setTypeface(), so the box is sized by the
+    // default typeface, while drawText() centres the string using the asset font.
     float measured = 0.0f;
     if (info != nullptr) {
         for (size_t i = 0; i < text.size(); i++) {
@@ -144,7 +147,7 @@ Texture::Texture(const std::string& text, const std::string& font, int glyph_off
             }
         }
     }
-    int text_width = (int) measured;
+    int text_width = (int) default_typeface::measure(text, font_size);
     int width = Util::nextPowerOfTwo(text_width > font_size ? text_width : font_size);
     if (width <= 0) width = 1;
 

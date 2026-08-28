@@ -61,15 +61,26 @@ The port keeps the original's behaviour rather than fixing it: the decompiled co
 unreachable splash branches, the integer division in `Sprite::setFrame`, the same event ordering and
 the same frame-by-frame maths are all preserved. Deliberate deviations, all forced by the platform:
 
-- Text metrics come from the real font. Android measured the string with the *default* typeface and
-  then drew it with `fawn`/`zerothre`, which is not reproducible off-Android; measuring with the
-  font actually used keeps text centred.
 - Textures are uploaded with straight (non-premultiplied) alpha, which blends slightly cleaner than
   Android's premultiplied bitmaps did under the game's blend function.
 - The low-resolution asset set names two files that do not exist in it (`Basement.png`,
-  `restroom.png`). Android threw; here the loader falls back to the file that does exist.
-- There is no "exit the app" on the web, so the menu's Exit button asks the browser to close the
-  tab, which browsers ignore unless the page opened itself.
+  `restroom.png`). Android dereferenced the null bitmap and crashed; here the loader falls back to
+  the file that does exist, because a crash is not worth reproducing.
+- `unlock.wav` is likewise missing from the assets. Android would have thrown when it played, but
+  nothing can play it: the sound only fires on a level unlock, and every level's
+  `score_to_unlock_next` is 0 while unlocks are only checked for scores of 1 or more.
+- Android restarted the ambient loop from the beginning when the app resumed, because
+  `SoundMgr.startBackgroundSound()` re-prefixed an already-prefixed filename and so never matched
+  the current track. Here the loop keeps playing instead.
+- There is no "exit the app" on the web, so the menu's Exit button (and Escape on the menu, which
+  was the back key's exit path) asks the browser to close the tab, which browsers ignore unless the
+  page opened itself.
+
+Text is the one place that needed real work to stay faithful. `Texture.java` measures the string
+with `Paint`'s *default* typeface and only afterwards installs `fawn`/`zerothre`, so the power-of-two
+texture box and `m_text_size` — which drive the tap targets and the wind-speed indicator's scale —
+are sized by Roboto while the glyphs are drawn with the game font. `src/default_font_metrics.h`
+carries Roboto's ASCII advance widths so the port can reproduce both measurements.
 
 ## Credits
 
