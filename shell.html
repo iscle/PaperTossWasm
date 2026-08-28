@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Paper Toss</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overscroll-behavior: none;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas#canvas {
+    display: block;
+    background: #000;
+    touch-action: none;
+    outline: none;
+    image-rendering: auto;
+  }
+  #splash {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000 center/contain no-repeat url("splash.png");
+    transition: opacity 400ms ease;
+    z-index: 10;
+  }
+  #splash.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #status {
+    position: absolute;
+    bottom: 8%;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px #000;
+  }
+</style>
+</head>
+<body>
+  <canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+  <div id="splash"><div id="status">Loading…</div></div>
+  <script>
+    var statusElement = document.getElementById('status');
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print: function (text) { console.log(text); },
+      printErr: function (text) { console.error(text); },
+      setStatus: function (text) {
+        if (!statusElement) return;
+        var match = /([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/.exec(text);
+        if (match) {
+          var percent = Math.round((parseFloat(match[2]) / parseFloat(match[4])) * 100);
+          statusElement.textContent = 'Loading… ' + percent + '%';
+        } else {
+          statusElement.textContent = text || '';
+        }
+      },
+    };
+    Module.setStatus('Loading…');
+    window.onerror = function () { Module.setStatus('Something went wrong.'); };
+    // Keep the page itself inert: the game owns every gesture.
+    document.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+    document.addEventListener('dblclick', function (e) { e.preventDefault(); });
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>
