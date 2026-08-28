@@ -158,8 +158,11 @@ Texture::Texture(const std::string& text, const std::string& font, int glyph_off
         // row and flip the whole bitmap afterwards, which comes out identical.
         int baseline = (width - 1) - ((width / 2) - (font_size / 4));
         float pen_x = (float) (width / 2) - (measured * 0.5f);
-        // outline > 0 meant Paint.setFakeBoldText(true) on Android.
-        int bold = outline > 0 ? (font_size / 24) + 1 : 0;
+        // outline > 0 meant Paint.setFakeBoldText(true) on Android, which reaches
+        // FT_Outline_Embolden with a strength of font_size/24, growing the glyph
+        // in +x and +y. Dilating the coverage the same way is the raster
+        // equivalent.
+        int bold = outline > 0 ? (font_size / 24) : 0;
         for (size_t i = 0; i < text.size(); i++) {
             int codepoint = (unsigned char) text[i];
             int advance = 0, lsb = 0;
@@ -171,9 +174,10 @@ Texture::Texture(const std::string& text, const std::string& font, int glyph_off
                 std::vector<unsigned char> glyph((size_t) glyph_w * glyph_h, 0);
                 stbtt_MakeCodepointBitmap(info, glyph.data(), glyph_w, glyph_h, glyph_w, scale, scale,
                                           codepoint);
-                for (int pass = 0; pass <= bold; pass++) {
-                    int dst_x0 = (int) (pen_x + 0.5f) + x0 + pass;
-                    int dst_y0 = baseline + y0;
+                for (int pass = 0; pass <= bold * bold + 2 * bold; pass++) {
+                    int span = bold + 1;
+                    int dst_x0 = (int) (pen_x + 0.5f) + x0 + (pass % span);
+                    int dst_y0 = baseline + y0 - (pass / span);
                     for (int y = 0; y < glyph_h; y++) {
                         int dy = dst_y0 + y;
                         if (dy < 0 || dy >= width) continue;

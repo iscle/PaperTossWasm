@@ -178,20 +178,18 @@ bool read(bool def, const std::string& key, const std::string& group) {
 namespace Random {
 
 namespace {
-// Java's Math.random() reseeds per process; do the same from the wall clock.
-struct Seeder {
-    Seeder() { std::srand((unsigned int) emscripten_get_now()); }
-} g_seeder;
+// Java called Math.random(); JavaScript's is the same thing, so the port keeps
+// the arithmetic around it identical rather than reseeding a C library RNG.
+EM_JS(double, js_random, (), { return Math.random(); });
 }  // namespace
 
 int randomi(int low, int high) {
-    int randi = (int) (((double) std::rand() / ((double) RAND_MAX + 1.0)) * 2.147483647E9);
+    int randi = (int) (js_random() * 2.147483647E9);
     return (randi % ((high - low) + 1)) + low;
 }
 
 float randomf(float low, float high) {
-    double r = (double) std::rand() / ((double) RAND_MAX + 1.0);
-    return (float) ((r * (double) (high - low)) + (double) low);
+    return (float) ((js_random() * (double) (high - low)) + (double) low);
 }
 
 }  // namespace Random
